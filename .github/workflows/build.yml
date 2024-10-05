@@ -1,0 +1,26 @@
+name: .NET Core CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Configurar .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '7.0.x'
+
+    - name: Restaurar dependências
+      run: dotnet restore
+
+    - name: Construir aplicação
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Executar testes
+      run: dotnet test --no-build --verbosity normal
