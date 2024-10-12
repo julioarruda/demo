@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Xml;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace demo_octocat.Pages;
 
@@ -17,34 +19,15 @@ public class IndexModel : PageModel
 
     public void OnGet()
     {
-        String URLString = "https://octodex.github.com/atom.xml";
+        string url = "https://octodex.github.com/atom.xml";
+        XDocument doc = XDocument.Load(url);
+        var octoImages = doc.Descendants("entry")
+                            .Select(entry => entry.Element("content")?.Value)
+                            .Where(content => content != null)
+                            .Select(content => content.Substring(content.IndexOf("<img src=") + 10, content.IndexOf("/>") - content.IndexOf("<img src=") - 11).Replace("\"", ""))
+                            .ToList();
 
-        using var reader = XmlReader.Create(URLString);
-
-        reader.ReadToFollowing("entry");
-        List<string> octolist = new List<string>();
-
-        do
-        {
-            reader.ReadToFollowing("content");
-            string content = reader.ReadElementContentAsString();
-            
-            string test = content.Substring(content.IndexOf("<img src=") + "<img src=".Length, content.IndexOf("/>") - content.IndexOf("<img src=") - "<img src=".Length);
-            string imgUrl = test.Replace(@"""","");
-            octolist.Add(imgUrl);
-
-        } while (reader.ReadToFollowing("entry"));
-
-
-            Random rnd = new Random();
-
-            for (int j = 0; j < octolist.Count(); j++)
-            {
-               octoImage = octolist[rnd.Next(octolist.Count())];
-               break;
-            }
-
-
+        Random rnd = new Random();
+        octoImage = octoImages[rnd.Next(octoImages.Count)];
     }
-
 }
